@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from 'react-native-elements';
 import {
   Image,
   Platform,
@@ -7,18 +8,19 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
 } from 'react-native';
 import { WebBrowser } from 'expo';
 
 import { MonoText } from '../components/StyledText';
 
 import gql from "graphql-tag";
-import { Query } from "react-apollo";
+import { Query, Mutation} from "react-apollo";
 
 const GET_GIF = gql`
   query ugh {
     giphy {
-      random(tag: "food", rating: pg13) {
+      random(tag: "food", rating: pg) {
         id
         images {
           original {
@@ -29,23 +31,76 @@ const GET_GIF = gql`
     }
   }
 `;
-{/*{data.giphy.random.images.original.url}*/}
-{/*'https://media.giphy.com/media/QMHKAxfkujtDi/giphy.gif'*/}
+{/* default url --> 'https://media.giphy.com/media/QMHKAxfkujtDi/giphy.gif'*/}
 const GIF = () => (
   <Query query={GET_GIF}>
-    {({ loading, error, data }) => {
+    {({ loading, error, data, refetch }) => {
       if (loading) return null;
       if (error) return "Error!";
-      console.log("this is the GIF");
-      {/*console.log(data.giphy.random.images.original.url);*/}
-      let url = data.giphy.random.images.original.url;
+      
+      if(data.giphy.random === undefined || !data.giphy.random) {
+        var url = 'https://media.giphy.com/media/QMHKAxfkujtDi/giphy.gif';
+      }
+      else {
+        var url = data.giphy.random.images.original.url;
+      }
+
       return (
-        <Image source={{uri: url}}
-              style={{width: 400, height: 400}} />
+        <View>
+          <Image source={{uri: url}} style={styles.gif} />
+          <View style={styles.containerButton}>
+            <Button title="Re-roll" onPress={() => refetch()} />
+            {/*<View style={styles.myButton}>
+              <Text onPress={() => refetch()}>Re-roll</Text>
+            </View>*/}
+          </View>
+        </View>
       );
     }}
   </Query>
 );
+
+{/*const updateStar = gql`
+  mutation updateStar($input: SetValueForKeyInput!) {
+    keyValue_setValue(input:$input) {
+      item {
+        id
+        value
+      }
+    }
+  }
+`;
+
+const STAR = ( idd, value) => {
+  var input = {
+    id: idd,
+    value: value,
+    clientMutationId: "a",
+  };
+    return (
+      <View>
+      <Mutation mutation={updateStar} refetchQueries={[{ query: dogQuery }]}>
+        {(keyValue_setValue, { data }) => (
+      <View style={styles.container}>
+        <Button onPress={() => { keyValue_setValue({ variables: {
+                id: input.id,
+                value: input.value,
+                clientMutationId: input.clientMutationId
+              }
+            })
+            .then(res => res)
+            .catch(err => <Text>{err}</Text>);
+            input.id = "";
+            input.value = "";
+          }}
+         title="ToggleStar"
+        />
+      </View>
+      )}
+      </Mutation>
+      </View>
+    );
+  }*/}
 
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
@@ -55,7 +110,7 @@ export default class HomeScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+        <View style={{flex: 2, backgroundColor: 'white'}} />
           <View style={styles.welcomeContainer}>
             {/*{let ugh = 'https://media.giphy.com/media/QMHKAxfkujtDi/giphy.gif'}
             <Image source={{uri: {ugh}}}
@@ -63,6 +118,9 @@ export default class HomeScreen extends React.Component {
             }*/}
             <GIF/>
           </View>
+          {/*<View>
+            <STAR idd={url} value="liked"/>
+          </View>*/}
 
           {/*<View style={styles.getStartedContainer}>
             {this._maybeRenderDevelopmentModeWarning()}
@@ -83,7 +141,6 @@ export default class HomeScreen extends React.Component {
               <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
             </TouchableOpacity>
           </View>*/}
-        </ScrollView>
 
         {/*<View style={styles.tabBarInfoContainer}>
           <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
@@ -131,6 +188,25 @@ export default class HomeScreen extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  gif: {
+    width: Dimensions.get('window').width,
+    height: 400,
+  },
+  containerButton: {
+    flex: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    backgroundColor: '#fff',
+  },
+  myButton:{
+    padding: 5,
+    height: 150,
+    width: 150,  //The Width must be the same as the height
+    borderRadius:300, //Then Make the Border Radius twice the size of width or Height   
+    backgroundColor:'rgb(195, 125, 198)',
+
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -147,8 +223,9 @@ const styles = StyleSheet.create({
   },
   welcomeContainer: {
     alignItems: 'center',
-    marginTop: 50,
-    marginBottom: 20,
+    textAlign: 'center',
+    justifyContent: 'center',
+    flex: 10,
   },
   welcomeImage: {
     width: 100,
