@@ -12,6 +12,41 @@ import { WebBrowser } from 'expo';
 
 import { MonoText } from '../components/StyledText';
 
+import gql from "graphql-tag";
+import { Query } from "react-apollo";
+
+const GET_GIF = gql`
+  query ugh {
+    giphy {
+      random(tag: "food", rating: pg13) {
+        id
+        images {
+          original {
+            url
+          }
+        }
+      }
+    }
+  }
+`;
+{/*{data.giphy.random.images.original.url}*/}
+{/*'https://media.giphy.com/media/QMHKAxfkujtDi/giphy.gif'*/}
+const GIF = () => (
+  <Query query={GET_GIF}>
+    {({ loading, error, data }) => {
+      if (loading) return null;
+      if (error) return "Error!";
+      console.log("this is the GIF");
+      {/*console.log(data.giphy.random.images.original.url);*/}
+      let url = data.giphy.random.images.original.url;
+      return (
+        <Image source={{uri: url}}
+              style={{width: 400, height: 400}} />
+      );
+    }}
+  </Query>
+);
+
 export default class HomeScreen extends React.Component {
   static navigationOptions = {
     header: null,
@@ -22,17 +57,14 @@ export default class HomeScreen extends React.Component {
       <View style={styles.container}>
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
           <View style={styles.welcomeContainer}>
-            <Image
-              source={
-                __DEV__
-                  ? require('../assets/images/robot-dev.png')
-                  : require('../assets/images/robot-prod.png')
-              }
-              style={styles.welcomeImage}
-            />
+            {/*{let ugh = 'https://media.giphy.com/media/QMHKAxfkujtDi/giphy.gif'}
+            <Image source={{uri: {ugh}}}
+              style={{width: 400, height: 400}} />
+            }*/}
+            <GIF/>
           </View>
 
-          <View style={styles.getStartedContainer}>
+          {/*<View style={styles.getStartedContainer}>
             {this._maybeRenderDevelopmentModeWarning()}
 
             <Text style={styles.getStartedText}>Get started by opening</Text>
@@ -50,16 +82,16 @@ export default class HomeScreen extends React.Component {
             <TouchableOpacity onPress={this._handleHelpPress} style={styles.helpLink}>
               <Text style={styles.helpLinkText}>Help, it didn’t automatically reload!</Text>
             </TouchableOpacity>
-          </View>
+          </View>*/}
         </ScrollView>
 
-        <View style={styles.tabBarInfoContainer}>
+        {/*<View style={styles.tabBarInfoContainer}>
           <Text style={styles.tabBarInfoText}>This is a tab bar. You can edit it in:</Text>
 
           <View style={[styles.codeHighlightContainer, styles.navigationFilename]}>
             <MonoText style={styles.codeHighlightText}>navigation/MainTabNavigator.js</MonoText>
           </View>
-        </View>
+        </View>*/}
       </View>
     );
   }
@@ -115,7 +147,7 @@ const styles = StyleSheet.create({
   },
   welcomeContainer: {
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 50,
     marginBottom: 20,
   },
   welcomeImage: {

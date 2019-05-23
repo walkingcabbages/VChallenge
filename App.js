@@ -4,12 +4,40 @@ import React from 'react';
 import { Platform, StatusBar, StyleSheet, View, Text } from 'react-native';
 import { AppLoading, Asset, Font, Icon } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
-{/*import MainPage from './mainpage';*/}
-import ApolloClient from 'apollo-boost';
-import {ApolloProvider} from 'react-apollo';
+import ApolloClient from "apollo-boost";
+import { gql } from "apollo-boost";
+import { ApolloProvider } from "react-apollo";
+
 const client = new ApolloClient({
-  uri: "https://api.github.com/graphql"
+  uri: "https://www.graphqlhub.com/graphql"
 });
+
+client
+  .query({
+    query: gql`
+      {
+      graphQLHub
+      giphy {
+        random(tag: "food", rating: pg13) {
+          id
+          url
+        }
+      }
+    }
+    `
+  })
+  .then(result => console.log(result));
+
+{/*process.env['GIPHY_API_KEY'] = 'ERT4qd6eXCDUvDPfc1tw9gB7dXEwbSxt';*/}
+
+{/*let schema = new GraphQLSchema({
+  query: Giphy.QueryObjectType
+});*/}
+
+{/*let query = '' { user(username: "kn0thing") { username } } '';
+graphql(schema, query).then((result) => {
+  console.log(result);
+});*/}
 
 export default class App extends React.Component {
   state = {
@@ -18,7 +46,6 @@ export default class App extends React.Component {
 
   render() {
     console.log('got to app');
-    {/*<ApolloProvider client = {client}>*/}
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
       return (
         <AppLoading
@@ -30,13 +57,13 @@ export default class App extends React.Component {
     } else {
       return (
         <View style={styles.container}>
-          {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          <AppNavigator />
-          {/*<Text>Yay App text is working</Text>*/}
+          <ApolloProvider client={client}>
+            {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
+              <AppNavigator />
+          </ApolloProvider>
         </View>
       );
     }
-    {/*</ApolloProvider>*/}
   }
 
   _loadResourcesAsync = async () => {
